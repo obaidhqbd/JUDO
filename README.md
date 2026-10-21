@@ -33,3 +33,15 @@ https://github.com/obaidhqbd/JUDO
 - Analytics loads only after a visitor chooses **Accept analytics** in the privacy notice.
 - Visitors can reject or change their selection using **Privacy choices** in the footer.
 - The privacy policy is available at [privacy.html](https://obaidhqbd.github.io/JUDO/privacy.html).
+
+### What visitor activity can be measured
+
+With visitor consent, the site sends these custom GA4 events:
+
+- `portfolio_section_view`: a portfolio or privacy-policy section was viewed.
+- `portfolio_section_engagement`: approximate seconds that a section stayed visible while the browser tab was active (minimum 3 seconds; capped at 30 minutes per measurement).
+- `portfolio_interaction`: a navigation link or button was used. The event stores a short label and internal/external/button classification, not the full destination URL.
+
+The site does not collect names, form contents, or use hidden browser fingerprinting. Analytics measurement is pseudonymous and cannot identify a visitor by their real name on this static site.
+
+In Google Analytics, check **Reports → Realtime** to test incoming events. For historical analysis, open **Reports → Engagement → Events**. To report custom event parameters in Explorations, register these event-scoped dimensions under **Admin → Data display → Custom definitions**: `section_id`, `element_label`, `destination_type`, and `placement`. Register `active_seconds` as a custom metric (integer/standard unit) so the section-time values can be examined. Custom definitions apply to data collected after registration and may take time to appear in reports.
