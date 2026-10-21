@@ -26,3 +26,10 @@ The `Deploy portfolio to GitHub Pages` workflow runs on pushes to `main` and can
 ## Repository
 
 https://github.com/obaidhqbd/JUDO
+
+## Visitor analytics and privacy
+
+- Google Analytics 4 uses Measurement ID `G-R8YP3TWCJN`.
+- Analytics loads only after a visitor chooses **Accept analytics** in the privacy notice.
+- Visitors can reject or change their selection using **Privacy choices** in the footer.
+- The privacy policy is available at [privacy.html](https://obaidhqbd.github.io/JUDO/privacy.html).
