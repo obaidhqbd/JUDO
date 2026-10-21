@@ -37,52 +37,53 @@
         <p>This page describes the current site setup and is general information, not legal advice.</p>
       </div>
 
-      <section class="policy-section">
+      <section class="policy-section" id="overview">
         <h2>1. Who operates this website?</h2>
         <p>This portfolio is operated by Mohammed Obaidul Hoque and published at <a href="https://obaidhqbd.github.io/JUDO/">obaidhqbd.github.io/JUDO</a>. The website is hosted by GitHub Pages. GitHub may process technical information required to deliver and secure the site under its own <a href="https://docs.github.com/en/site-policy/privacy-policies/github-privacy-statement" target="_blank" rel="noopener noreferrer">Privacy Statement</a>.</p>
       </section>
 
-      <section class="policy-section">
+      <section class="policy-section" id="google-analytics">
         <h2>2. Google Analytics</h2>
-        <p>If you accept analytics, this website loads Google Analytics 4 (Measurement ID <code>G-R8YP3TWCJN</code>) to understand how people use the portfolio. Depending on the browser and the Analytics settings, information may include:</p>
+        <p>If you accept analytics, this website loads Google Analytics 4 (Measurement ID <code>G-R8YP3TWCJN</code>) to understand how people use the portfolio. Depending on browser and Analytics settings, measurement may include:</p>
         <ul>
           <li>Pages viewed, page titles, approximate visit times, and interactions with the website.</li>
           <li>Referring website or traffic source, when available.</li>
           <li>Browser, operating system, device category, and general geographic area.</li>
           <li>Cookies or similar identifiers used to distinguish visits and help measure site usage.</li>
+          <li>Which portfolio sections are viewed, approximate time a section stays visible while the tab is active, and high-level navigation/button clicks.</li>
         </ul>
-        <p>The purpose is to measure traffic and improve the usefulness and performance of the portfolio. I do not intentionally ask Analytics visitors to submit names, email addresses, passwords, or other directly identifying details through this site. Please do not place sensitive or personal information in page URLs or messages to third-party services.</p>
+        <p>The purpose is to measure traffic and improve the usefulness and performance of the portfolio. Section-time measurements are approximate, reflect visible page content while the browser tab is active, and are not proof that a person was continuously reading. Google Analytics data is pseudonymous and does not tell the site owner a visitor's real name unless the visitor separately provides it through an appropriate, transparent interaction. This portfolio does not use hidden browser fingerprinting or try to infer visitors' real-world identities. I do not intentionally ask Analytics visitors to submit names, email addresses, passwords, or other directly identifying details through this site. Please do not place sensitive or personal information in page URLs or messages to third-party services.</p>
         <p>Google processes Analytics data under its applicable terms and policies. Read <a href="https://support.google.com/analytics/answer/6004245" target="_blank" rel="noopener noreferrer">Google's information about safeguarding Analytics data</a> and the <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Google Privacy Policy</a>.</p>
       </section>
 
-      <section class="policy-section">
+      <section class="policy-section" id="cookies-and-choice">
         <h2>3. Cookies and your choice</h2>
         <p>Analytics is not loaded until you choose “Accept analytics.” If you select “Reject analytics,” this site stores that preference in your browser and does not load its Google Analytics tag. The preference is stored locally in your browser; it is not an account or login.</p>
         <p>You can change your decision by selecting <strong>Privacy choices</strong> in the portfolio footer and choosing either option. Clearing browser site data may also clear your saved choice. You can additionally manage cookies in your browser or use Google's <a href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noopener noreferrer">Analytics opt-out browser add-on</a>.</p>
         <p>Choosing to reject Analytics does not prevent GitHub or other linked services from processing information as part of their own operation. External websites have their own privacy policies.</p>
       </section>
 
-      <section class="policy-section">
+      <section class="policy-section" id="third-party-links">
         <h2>4. Advertising and third-party links</h2>
         <p>This portfolio currently does not intentionally display third-party ads or load advertising/remarketing tags. It contains links to services such as GitHub and social networks. If you follow those links, those services may collect information under their own terms. This policy should be updated if additional advertising or tracking services are added later.</p>
       </section>
 
-      <section class="policy-section">
+      <section class="policy-section" id="data-retention">
         <h2>5. Data access, retention, and security</h2>
         <p>Analytics reports are available to the portfolio owner through the Google Analytics property. Data retention and deletion settings are managed in that property and by the service provider. No website can promise absolute security, but access to the Analytics account should be protected with a strong password and available account-security features.</p>
       </section>
 
-      <section class="policy-section">
+      <section class="policy-section" id="childrens-privacy">
         <h2>6. Children's privacy</h2>
         <p>This portfolio is a professional information website. It does not provide user accounts or an on-site form for submitting personal details, and it is not designed to solicit personal information from children.</p>
       </section>
 
-      <section class="policy-section">
+      <section class="policy-section" id="policy-changes">
         <h2>7. Changes to this policy</h2>
         <p>This notice may be updated when the site's features, analytics setup, or applicable requirements change. The date at the top indicates the latest revision.</p>
       </section>
 
-      <section class="policy-section">
+      <section class="policy-section" id="contact">
         <h2>8. Contact</h2>
         <p>For questions about this website's privacy practices, contact the site operator through the <a href="https://github.com/obaidhqbd" target="_blank" rel="noopener noreferrer">GitHub profile</a> or <a href="https://www.linkedin.com/in/obaidulhoquctg/" target="_blank" rel="noopener noreferrer">LinkedIn profile</a>.</p>
         <p class="note">Because this is a small personal portfolio, this notice is intended to explain the current implementation in plain language. It is not a guarantee of compliance with every country's privacy laws.</p>
@@ -116,7 +117,7 @@
         window.dataLayer = window.dataLayer || [];
         window.gtag = function(){ window.dataLayer.push(arguments); };
         window.gtag('js', new Date());
-        window.gtag('config', 'G-R8YP3TWCJN');
+        window.gtag('config', 'G-R8YP3TWCJN', { allow_google_signals: false, allow_ad_personalization_signals: false, page_location: window.location.origin + window.location.pathname, page_title: document.title });
         const analyticsScript = document.createElement('script');
         analyticsScript.async = true;
         analyticsScript.src = 'https://www.googletagmanager.com/gtag/js?id=G-R8YP3TWCJN';
@@ -142,6 +143,86 @@
           document.getElementById('analytics-accept')?.focus();
         }
       });
+
+      const viewedSections = new Set();
+      const visibleSectionRatios = new Map();
+      let currentSectionId = null;
+      let sectionStartedAt = 0;
+      const analyticsIsAllowed = () => {
+        try {
+          return localStorage.getItem(consentKey) === 'accepted' &&
+            typeof window.gtag === 'function' &&
+            Boolean(window.__obaidulAnalyticsLoaded);
+        } catch (_) { return false; }
+      };
+      const reportSectionView = sectionId => {
+        if (!sectionId || viewedSections.has(sectionId) || !analyticsIsAllowed()) return;
+        viewedSections.add(sectionId);
+        window.gtag('event', 'portfolio_section_view', { section_id: sectionId });
+      };
+      const flushSectionTimer = () => {
+        if (!currentSectionId || !sectionStartedAt) return;
+        const sectionId = currentSectionId;
+        const activeSeconds = Math.min(1800, Math.round((Date.now() - sectionStartedAt) / 1000));
+        currentSectionId = null;
+        sectionStartedAt = 0;
+        if (activeSeconds >= 3 && analyticsIsAllowed()) {
+          window.gtag('event', 'portfolio_section_engagement', { section_id: sectionId, active_seconds: activeSeconds });
+        }
+      };
+      const refreshActiveSection = () => {
+        if (!analyticsIsAllowed() || document.visibilityState !== 'visible') {
+          flushSectionTimer();
+          return;
+        }
+        let bestId = null;
+        let bestRatio = 0;
+        visibleSectionRatios.forEach((ratio, id) => {
+          if (ratio > bestRatio) { bestRatio = ratio; bestId = id; }
+        });
+        if (!bestId || bestRatio < 0.35) { flushSectionTimer(); return; }
+        if (bestId !== currentSectionId) {
+          flushSectionTimer();
+          currentSectionId = bestId;
+          sectionStartedAt = Date.now();
+          reportSectionView(bestId);
+        }
+      };
+      const sections = document.querySelectorAll('main section[id]');
+      if ('IntersectionObserver' in window && sections.length) {
+        const observer = new IntersectionObserver(entries => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting && entry.intersectionRatio > 0) visibleSectionRatios.set(entry.target.id, entry.intersectionRatio);
+            else visibleSectionRatios.delete(entry.target.id);
+          });
+          refreshActiveSection();
+        }, { threshold: [0, 0.15, 0.35, 0.5, 0.75] });
+        sections.forEach(section => observer.observe(section));
+      }
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') flushSectionTimer();
+        else refreshActiveSection();
+      });
+      window.addEventListener('pagehide', flushSectionTimer);
+      document.addEventListener('click', event => {
+        if (!analyticsIsAllowed()) return;
+        const element = event.target instanceof Element ? event.target.closest('a, button') : null;
+        if (!element || ['analytics-accept', 'analytics-reject', 'privacy-settings', 'theme-toggle'].includes(element.id)) return;
+        const label = (element.getAttribute('aria-label') || element.textContent || '').trim().slice(0, 60) || 'unlabelled';
+        const href = element.tagName === 'A' ? element.getAttribute('href') : null;
+        let destinationType = 'button';
+        if (href) {
+          try { destinationType = new URL(href, window.location.href).origin === window.location.origin ? 'internal' : 'external'; }
+          catch (_) { destinationType = 'link'; }
+        }
+        const parentSection = element.closest('section[id]');
+        window.gtag('event', 'portfolio_interaction', {
+          element_type: element.tagName.toLowerCase(),
+          element_label: label,
+          destination_type: destinationType,
+          placement: parentSection ? parentSection.id : 'navigation_or_footer'
+        });
+      }, { passive: true });
       const year = document.getElementById('year');
       if (year) year.textContent = String(new Date().getFullYear());
       const themeToggle = document.getElementById('theme-toggle');
