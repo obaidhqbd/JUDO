@@ -303,7 +303,7 @@
         const element = event.target instanceof Element ? event.target.closest('a, button') : null;
         if (!element || ['analytics-accept', 'analytics-reject', 'privacy-settings', 'theme-toggle', 'menu-toggle'].includes(element.id)) return;
         const rawLabel = element.getAttribute('aria-label') || element.textContent || '';
-        const elementLabel = rawLabel.replace(/\\s+/g, ' ').trim().slice(0, 60);
+        const elementLabel = rawLabel.replace(/\s+/g, ' ').trim().slice(0, 60);
         const href = element.tagName === 'A' ? element.getAttribute('href') : null;
         let destinationType = 'button';
         if (href) {
