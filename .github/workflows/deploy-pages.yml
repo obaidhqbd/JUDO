@@ -23,6 +23,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v6
+      - name: Validate inline JavaScript
+        run: python3 .github/scripts/check-inline-js.py
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
         with:
