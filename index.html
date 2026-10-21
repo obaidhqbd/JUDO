@@ -195,7 +195,7 @@
         window.dataLayer = window.dataLayer || [];
         window.gtag = function(){ window.dataLayer.push(arguments); };
         window.gtag('js', new Date());
-        window.gtag('config', 'G-R8YP3TWCJN');
+        window.gtag('config', 'G-R8YP3TWCJN', { allow_google_signals: false, allow_ad_personalization_signals: false, page_location: window.location.origin + window.location.pathname, page_title: document.title });
         const analyticsScript = document.createElement('script');
         analyticsScript.async = true;
         analyticsScript.src = 'https://www.googletagmanager.com/gtag/js?id=G-R8YP3TWCJN';
@@ -203,9 +203,15 @@
       };
       const closeConsentPanel = () => { if (consentPanel) consentPanel.hidden = true; };
       const setAnalyticsConsent = choice => {
+        const wasLoaded = Boolean(window.__obaidulAnalyticsLoaded);
         try { localStorage.setItem(consentKey, choice); } catch (_) {}
-        if (choice === 'accepted') loadAnalytics();
+        if (choice === 'accepted') {
+          loadAnalytics();
+          if (typeof refreshActiveSection === 'function') refreshActiveSection();
+        }
         closeConsentPanel();
+        // Reload after withdrawal so an already-loaded analytics tag no longer runs.
+        if (choice !== 'accepted' && wasLoaded) window.location.reload();
       };
       let storedConsent = null;
       try { storedConsent = localStorage.getItem(consentKey); } catch (_) {}
@@ -219,6 +225,100 @@
           document.getElementById('analytics-accept')?.focus();
         }
       });
+
+      // Usage analytics: send section views, visible-section time, and high-level clicks
+      // only after consent. Never send names, email addresses, form contents, or full URLs.
+      const viewedSections = new Set();
+      const visibleSectionRatios = new Map();
+      let currentSectionId = null;
+      let sectionStartedAt = 0;
+      const analyticsIsAllowed = () => {
+        try {
+          return localStorage.getItem(consentKey) === 'accepted' &&
+            typeof window.gtag === 'function' &&
+            Boolean(window.__obaidulAnalyticsLoaded);
+        } catch (_) { return false; }
+      };
+      const reportSectionView = sectionId => {
+        if (!sectionId || viewedSections.has(sectionId) || !analyticsIsAllowed()) return;
+        viewedSections.add(sectionId);
+        window.gtag('event', 'portfolio_section_view', { section_id: sectionId });
+      };
+      const flushSectionTimer = () => {
+        if (!currentSectionId || !sectionStartedAt) return;
+        const sectionId = currentSectionId;
+        const activeSeconds = Math.min(1800, Math.round((Date.now() - sectionStartedAt) / 1000));
+        currentSectionId = null;
+        sectionStartedAt = 0;
+        if (activeSeconds >= 3 && analyticsIsAllowed()) {
+          window.gtag('event', 'portfolio_section_engagement', {
+            section_id: sectionId,
+            active_seconds: activeSeconds
+          });
+        }
+      };
+      const refreshActiveSection = () => {
+        if (!analyticsIsAllowed() || document.visibilityState !== 'visible') {
+          flushSectionTimer();
+          return;
+        }
+        let bestId = null;
+        let bestRatio = 0;
+        visibleSectionRatios.forEach((ratio, id) => {
+          if (ratio > bestRatio) { bestRatio = ratio; bestId = id; }
+        });
+        if (!bestId || bestRatio < 0.35) {
+          flushSectionTimer();
+          return;
+        }
+        if (bestId !== currentSectionId) {
+          flushSectionTimer();
+          currentSectionId = bestId;
+          sectionStartedAt = Date.now();
+          reportSectionView(bestId);
+        }
+      };
+      const observedSections = document.querySelectorAll('main section[id]');
+      if ('IntersectionObserver' in window && observedSections.length) {
+        const sectionObserver = new IntersectionObserver(entries => {
+          entries.forEach(entry => {
+            const id = entry.target.id;
+            if (entry.isIntersecting && entry.intersectionRatio > 0) {
+              visibleSectionRatios.set(id, entry.intersectionRatio);
+            } else {
+              visibleSectionRatios.delete(id);
+            }
+          });
+          refreshActiveSection();
+        }, { threshold: [0, 0.15, 0.35, 0.5, 0.75] });
+        observedSections.forEach(section => sectionObserver.observe(section));
+      }
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') flushSectionTimer();
+        else refreshActiveSection();
+      });
+      window.addEventListener('pagehide', flushSectionTimer);
+      document.addEventListener('click', event => {
+        if (!analyticsIsAllowed()) return;
+        const element = event.target instanceof Element ? event.target.closest('a, button') : null;
+        if (!element || ['analytics-accept', 'analytics-reject', 'privacy-settings', 'theme-toggle', 'menu-toggle'].includes(element.id)) return;
+        const rawLabel = element.getAttribute('aria-label') || element.textContent || '';
+        const elementLabel = rawLabel.replace(/\\s+/g, ' ').trim().slice(0, 60);
+        const href = element.tagName === 'A' ? element.getAttribute('href') : null;
+        let destinationType = 'button';
+        if (href) {
+          try {
+            destinationType = new URL(href, window.location.href).origin === window.location.origin ? 'internal' : 'external';
+          } catch (_) { destinationType = 'link'; }
+        }
+        const section = element.closest('section[id]');
+        window.gtag('event', 'portfolio_interaction', {
+          element_type: element.tagName.toLowerCase(),
+          element_label: elementLabel || 'unlabelled',
+          destination_type: destinationType,
+          placement: section ? section.id : 'navigation_or_footer'
+        });
+      }, { passive: true });
 
       const themeMeta = document.querySelector('meta[name="theme-color"]');
       let saved = null;
