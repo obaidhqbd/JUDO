@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+User-agent: bingbot
+Allow: /
+
+Sitemap: https://obaidhqbd.github.io/JUDO/sitemap.xml
