@@ -1,6 +1,6 @@
-# Mohammed Obaidul Hoque — Portfolio
+# Mohammed Obaidul Hoque — Digital Marketing & Web Development Portfolio
 
-A responsive front-end developer portfolio published on GitHub Pages. Built as a lightweight, single-file static site with no build step, package manager, external font dependency, or JavaScript framework.
+A personal portfolio for digital marketing, SEO, and responsive web development, published on GitHub Pages. The site is a lightweight static build with no package manager, external font dependency, or JavaScript framework.
 
 ## Live website
 
@@ -17,11 +17,13 @@ https://obaidhqbd.github.io/JUDO/
 
 The `Deploy portfolio to GitHub Pages` workflow runs on pushes to `main` and can also be started manually from the Actions tab. The page source is `index.html` at the repository root.
 
-## Personalization checklist
+## Professional focus
 
-- Verify the LinkedIn URL and social handles before sharing widely.
-- Keep Obaid Web Lab labelled as in development until the project is ready.
-- Update project descriptions as their status changes; do not add unverified client results or testimonials.
+- Digital marketing and SEO, supported by web development.
+- Responsive websites and interfaces built with HTML, CSS, and JavaScript.
+- Practical AI concepts and GitHub automation.
+
+Project status is shown on the live portfolio.
 
 ## Repository
 
