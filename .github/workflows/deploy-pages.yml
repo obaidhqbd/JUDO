@@ -36,3 +36,50 @@ jobs:
       - name: Deploy website
         id: deployment
         uses: actions/deploy-pages@v4
+
+  notify-indexnow:
+    if: github.ref == 'refs/heads/main'
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Bing and other IndexNow search engines
+        run: |
+          python3 - <<'PY'
+          import json
+          import time
+          import urllib.error
+          import urllib.request
+
+          base = "https://obaidhqbd.github.io/JUDO/"
+          key = "judo-obaidhq-2026-bing-7f4c91e2"
+          payload = {
+              "host": "obaidhqbd.github.io",
+              "key": key,
+              "keyLocation": base + key + ".txt",
+              "urlList": [
+                  base,
+                  base + "privacy.html"
+              ]
+          }
+          request = urllib.request.Request(
+              "https://api.indexnow.org/indexnow",
+              data=json.dumps(payload).encode("utf-8"),
+              headers={"Content-Type": "application/json; charset=utf-8"},
+              method="POST"
+          )
+          last_error = None
+          for attempt in range(1, 5):
+              try:
+                  with urllib.request.urlopen(request, timeout=30) as response:
+                      if response.status in (200, 202):
+                          print("IndexNow accepted portfolio URLs (HTTP %s)." % response.status)
+                          break
+                      last_error = "Unexpected HTTP status %s" % response.status
+              except (OSError, urllib.error.URLError, urllib.error.HTTPError) as error:
+                  last_error = str(error)
+              if attempt < 4:
+                  print("IndexNow attempt %s did not succeed: %s" % (attempt, last_error))
+                  time.sleep(10)
+          else:
+              raise SystemExit("IndexNow submission was not confirmed: " + str(last_error))
+          PY
